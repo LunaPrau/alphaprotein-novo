@@ -17,6 +17,12 @@ See the [Quickstart](#quickstart) section for a basic launch command and
 [Example Design Campaigns](#example-design-campaigns) for more detailed
 examples.
 
+Any publication that discloses findings arising from using this source code, the
+model parameters, or outputs produced by those should [cite](#citing-this-work)
+the
+[Designing enzymes for new-to-nature chemistry and non-natural substrates with AlphaProtein Novo](https://www.biorxiv.org/content/10.64898/2026.10.01.756017v1)
+paper.
+
 :ledger: **Note: Pretrained model weights are not part of this package and must
 be downloaded from Google Cloud Storage (see
 [Model Parameters](#model-parameters-weights) below).** Use is subject to these
@@ -316,12 +322,13 @@ The design problem is specified in full using the following fields in the
 
 The `examples/` directory contains manifest files and input motif structures
 (`*.cif`) that partially reproduce the settings used for the best designs in the
-AP Novo paper. Problem-specific evaluation metrics are also included in the code
-for each of these examples, and are invoked by the manifests using the
-`evaluation.suite` field. Note that this repo is a port of the original
-(Google-internal) pipeline used to generate the designs in the paper. Some
-settings (e.g. numbers of resequences and folding seeds) have been reduced
-relative to the paper so that example runs can complete in a reasonable time.
+[AlphaProtein Novo paper](https://www.biorxiv.org/content/10.64898/2026.10.01.756017v1).
+Problem-specific evaluation metrics are also included in the code for each of
+these examples, and are invoked by the manifests using the `evaluation.suite`
+field. Note that this repo is a port of the original (Google-internal) pipeline
+used to generate the designs in the paper. Some settings (e.g. numbers of
+resequences and folding seeds) have been reduced relative to the paper so that
+example runs can complete in a reasonable time.
 
 Run any of the example campaigns end-to-end using, for example:
 
@@ -643,6 +650,24 @@ python evaluate_design.py \
 -   **AlphaFold 3 Confidence**:
     -   `plddt`: Mean per-atom predicted lDDT (0 to 100).
     -   `ptm` & `iptm`: Predicted TM-score and Interface predicted TM-score.
+
+## Citing This Work
+
+Any publication that discloses findings arising from using this source code, the
+model parameters, or outputs produced by those should cite:
+
+```bibtex
+@article{Wu2026,
+  author       = {Wu, Zachary and Abramson, Joshua and Frerix, Thomas and Chu, Alexander E. and Zhang, Ruijie K. and Schulz, Luca and Danson, Amy E. and Kwan, Tristan O. C. and Li, Wenliang K. and Kelly, Jacob and Li, Zi-Qi and Schneider, Rosalia G. and Thillaisundaram, Ashok and Patani, Harshnira and Zambaldi, Vinicius F. and Singh, Sukhdeep and La, David and Domecillo, Masy and Mora, Ariane N. and Reisenbauer, Julia C. and Zhang, Yu and Papa, Eliseo and Žemgulytė, Akvilė and Wu, Yu-Han and Žídek, Augustin and Shi, Jiaxin and Margand, Grace and Assem, Naila and Stephen, Kate and Emrich, Charlie and Liu, Peng and Colwell, Lucy and Hassabis, Demis and Fergus, Rob and Arnold, Frances H. and Kohli, Pushmeet and Wang, Jue},
+  title        = {Designing enzymes for new-to-nature chemistry and non-natural substrates with AlphaProtein Novo},
+  journal      = {bioRxiv},
+  year         = {2026},
+  elocation-id = {2026.10.01.756017},
+  doi          = {10.64898/2026.10.01.756017},
+  URL          = {https://www.biorxiv.org/content/10.64898/2026.10.01.756017v1},
+  eprint       = {https://www.biorxiv.org/content/10.64898/2026.10.01.756017v1.full.pdf}
+}
+```
 
 ## Licensing & Disclaimer
 

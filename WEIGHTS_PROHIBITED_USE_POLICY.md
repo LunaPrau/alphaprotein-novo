@@ -140,7 +140,7 @@ Generator Assets:**
 
 3.  **Distribute Output, or disclose findings arising from using the AP Novo
     Generator or AP Novo Pipeline without citing our paper:**
-    [Wu, Z et al. De novo design of enzymes for biocatalysis and bioremediation with AlphaProtein Novo*. bioRxiv (*2026*)* doi: 10.64898/2026.10.01.756017](https://www.biorxiv.org/content/10.64898/2026.10.01.756017).
+    [Wu, Z et al. Designing enzymes for new-to-nature chemistry and non-natural substrates with AlphaProtein Novo*. bioRxiv (*2026*)* doi: 10.64898/2026.10.01.756017](https://www.biorxiv.org/content/10.64898/2026.10.01.756017v1).
     For the avoidance of doubt, this is an additional requirement to the notice
     requirements set out above.
 
