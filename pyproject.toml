@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alphaprotein_novo"
+dynamic = ["version"]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {file = "LICENSE"}
+dependencies = [
+    "absl-py>=2.3.1",
+    "alphafold3 @ git+https://github.com/google-deepmind/alphafold3.git",
+    "chex",
+    "dm-haiku==0.0.17",
+    "dm-tree",
+    "etils[epath]",
+    "flax",
+    "jax==0.10.2",
+    "jax[cuda12]==0.10.2; sys_platform != 'darwin'",
+    "jax-mps==0.10.9; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    "numpy",
+    "pydantic>=2.0",
+    "rdkit==2026.3.3",
+    "scipy",
+    "tokamax==0.0.12",
+    "tqdm",
+    "zstandard",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "alphaprotein_novo.version.__version__"}
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"alphaprotein_novo" = ["data/*.cif", "data/*.json"]
+
+[tool.uv]
+package = true
+environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'linux' and platform_machine == 'aarch64'",
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+]

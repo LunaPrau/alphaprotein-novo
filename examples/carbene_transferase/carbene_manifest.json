@@ -1,0 +1,62 @@
+{
+  "defaults": {
+    "num_designs": 2,
+    "seed_start": 0,
+    "num_sampling_steps": 1000
+  },
+  "designs": [
+    {
+      "name": "carbene_transferase",
+      "output_prefix": "carbene",
+      "description": "Carbene transferase from same motif as GDM_CT_0103",
+      "input_file": "TS_SS_C5_prod-0.cif",
+      "motif_str": "10-100,C1,10-100/A1/B1",
+      "motif_atoms": "",
+      "seq_length": "100-200",
+      "is_author_naming": false
+    }
+  ],
+  "resequence": {
+    "enabled": true,
+    "temperature": 0.1,
+    "num_sequences": 2,
+    "use_side_chain_context": false
+  },
+  "folding": {
+    "inputs": [
+      "resequenced"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "states": [
+      {
+        "name": "monomer",
+        "ligands": [],
+        "covalent_bonds": []
+      },
+      {
+        "name": "complex",
+        "ligands": [
+          {
+            "id": "B",
+            "ccd_code": "HEM"
+          },
+          {
+            "id": "C",
+            "ccd_code": "pd00",
+            "smiles": "C1=CC=CC=C1C2CC2C(OCC)=O"
+          }
+        ],
+        "covalent_bonds": []
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "carbene_transfer"
+  }
+}

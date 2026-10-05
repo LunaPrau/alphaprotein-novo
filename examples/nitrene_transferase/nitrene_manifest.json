@@ -1,0 +1,131 @@
+{
+  "defaults": {
+    "num_designs": 2,
+    "seed_start": 0,
+    "num_sampling_steps": 1000
+  },
+  "designs": [
+    {
+      "name": "nitrene_transferase",
+      "output_prefix": "nitrene",
+      "description": "Nitrene transferase from same motif as GDM_NT_0151",
+      "input_file": "NT_PIP_R_hem-7.cif",
+      "motif_str": "1-280,A118,1-280/C1",
+      "motif_atoms": "",
+      "seq_length": "60-280",
+      "is_author_naming": false
+    }
+  ],
+  "resequence": {
+    "enabled": true,
+    "temperature": 0.1,
+    "num_sequences": 2,
+    "use_side_chain_context": false
+  },
+  "folding": {
+    "inputs": [
+      "resequenced"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "states": [
+      {
+        "name": "monomer",
+        "ligands": [],
+        "covalent_bonds": []
+      },
+      {
+        "name": "complex",
+        "ligands": [
+          {
+            "id": "C",
+            "ccd_code": "pd00",
+            "smiles": "CC1=C(CCC(O)=O)C2=NC1=Cc1c(C=C)c(C)c3\\C=C4/N=C(/C=C5\\N([Fe](N6CCCC[C@H]6C6=CC=CC=C6)n13)\\C(=C/2)C(CCC(O)=O)=C5C)C(C)=C4C=C",
+            "name": "PIP_R_hem"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "heme_substrate",
+        "ligands": [
+          {
+            "id": "X",
+            "ccd_code": "HEM"
+          },
+          {
+            "id": "Y",
+            "ccd_code": "pd00",
+            "smiles": "NCCCCCC1=CC=CC=C1",
+            "name": "substrate"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "heme_piperidine_R",
+        "ligands": [
+          {
+            "id": "X",
+            "ccd_code": "HEM"
+          },
+          {
+            "id": "Y",
+            "ccd_code": "pd00",
+            "smiles": "C1CC[C@H](NC1)C1=CC=CC=C1",
+            "name": "piperidine_R"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "heme_pyrrolidine_S",
+        "ligands": [
+          {
+            "id": "X",
+            "ccd_code": "HEM"
+          },
+          {
+            "id": "Y",
+            "ccd_code": "pd00",
+            "smiles": "C([C@@H]1CCCN1)C1=CC=CC=C1",
+            "name": "pyrrolidine_S"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "fiveazidopentylbenzene_heme_1",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CC1=C(CCC(O)=O)C2=NC1=Cc1c(C=C)c(C)c3\\C=C4/N=C(/C=C5\\N([Fe](N(CCCCCC6=CC=CC=C6)N=N)n13)\\C(=C/2)C(CCC(O)=O)=C5C)C(C)=C4C=C",
+            "name": "fiveazidopentylbenzene_heme_1"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "fiveazidopentylbenzene_heme_2",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "[Fe]N(CCCCCC1=CC=CC=C1)N=N.CC1=C(CCC([O-])=O)/C2=C/C3=N/C(=C\\C4=C(C)C(C=C)=C([N-]4)/C=C4\\N=C(\\C=C\\1/[N-]\\2)C(C=C)=C4C)/C(C)=C3CCC([O-])=O",
+            "name": "fiveazidopentylbenzene_heme_2"
+          }
+        ],
+        "covalent_bonds": []
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "nitrene_transfer"
+  }
+}

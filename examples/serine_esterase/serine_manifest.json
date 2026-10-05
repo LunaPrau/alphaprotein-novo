@@ -1,0 +1,111 @@
+{
+  "defaults": {
+    "num_designs": 2,
+    "seed_start": 0,
+    "num_sampling_steps": 1000
+  },
+  "designs": [
+    {
+      "name": "serine_esterase",
+      "output_prefix": "serine",
+      "description": "4MU-Ac serine esterase, from same motif as GDM_SE_2937",
+      "input_file": "1xzm_4mu_ac_ti1S_9_6.cif",
+      "motif_str": "100-250/Z1",
+      "is_author_naming": false,
+      "unindexed_motif_residues": "A120-121,A188,A175,A42,A84",
+      "motif_atoms": "A120:N,CA,C,O,CB,OG A121:N,CA,C,O,CB A188:NE2,CD2,CE1,ND1,CG,CB A175:OD2,OD1,CG,CB A42:N,CA,C,O,CB,OG A84:ND2,OD1,CG,CB",
+      "reseq_residues": "A121"
+    }
+  ],
+  "resequence": {
+    "enabled": true,
+    "temperature": 0.1,
+    "num_sequences": 2,
+    "use_side_chain_context": false
+  },
+  "folding": {
+    "inputs": [
+      "resequenced"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "states": [
+      {
+        "name": "monomer",
+        "ligands": [],
+        "covalent_bonds": []
+      },
+      {
+        "name": "es",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CC(=O)Oc2ccc1c(C)cc(=O)oc1c2",
+            "name": "4mu_ac"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "complex",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "Cc1cc(=O)oc2cc(O[C@@H](C)[O-])ccc12",
+            "name": "4mu_ac_ti1S"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "A120:OG",
+            "atom_2": "Z1:C8"
+          }
+        ]
+      },
+      {
+        "name": "aei",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CC=O",
+            "name": "4mu_ac_aei"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "A120:OG",
+            "atom_2": "Z1:C2"
+          }
+        ]
+      },
+      {
+        "name": "ti2",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "C[C@H](O)[O-]",
+            "name": "4mu_ac_ti2R"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "A120:OG",
+            "atom_2": "Z1:C2"
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "serine_esterase"
+  }
+}

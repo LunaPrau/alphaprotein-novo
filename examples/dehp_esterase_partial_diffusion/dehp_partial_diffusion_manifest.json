@@ -1,0 +1,111 @@
+{
+  "defaults": {
+    "num_designs": 2,
+    "seed_start": 0
+  },
+  "designs": [
+    {
+      "name": "dehp_partdiff",
+      "output_prefix": "dehp_partdiff",
+      "description": "DEHP esterase Round 3.0 partial diffusion (575 steps from parent GDM_DEHP_0176, same settings as GDM_DEHP_0376)",
+      "input_file": "1R64_dehp_SS_ti1R_696_119.cif",
+      "motif_str": "19,B93,12,B55,68,B194,61,B264-265,26/Z1",
+      "motif_atoms": "B93:NE2,ND1,CE1,CD2 B55:OD2,OD1,CG,CB B264:C,O B194:ND2,OD1,CG,CB",
+      "reseq_residues": "B264",
+      "is_author_naming": false,
+      "partial_diffusion_input_file": "GDM_DEHP_0176.cif",
+      "partial_diffusion_num_steps": 575
+    }
+  ],
+  "resequence": {
+    "enabled": true,
+    "temperature": 0.1,
+    "num_sequences": 2,
+    "use_side_chain_context": false
+  },
+  "folding": {
+    "inputs": [
+      "resequenced"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "states": [
+      {
+        "name": "monomer",
+        "ligands": [],
+        "covalent_bonds": []
+      },
+      {
+        "name": "es",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CCCC[C@H](CC)COC(=O)c1ccccc1C(=O)OC[C@@H](CC)CCCC",
+            "name": "dehp_SS"
+          }
+        ],
+        "covalent_bonds": []
+      },
+      {
+        "name": "complex",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CCCC[C@H](CC)COC(=O)c1ccccc1[C@@H]([O-])OC[C@@H](CC)CCCC",
+            "name": "dehp_SS_ti1S"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "B265:OG",
+            "atom_2": "Z1:C16"
+          }
+        ]
+      },
+      {
+        "name": "aei",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CCCC[C@@H](CC)COC(=O)c1ccccc1C=O",
+            "name": "dehp_S_aei"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "B265:OG",
+            "atom_2": "Z1:C16"
+          }
+        ]
+      },
+      {
+        "name": "ti2",
+        "ligands": [
+          {
+            "id": "Z",
+            "ccd_code": "pd00",
+            "smiles": "CCCC[C@@H](CC)COC(=O)c1ccccc1[C@@H](O)[O-]",
+            "name": "dehp_S_ti2S"
+          }
+        ],
+        "covalent_bonds": [
+          {
+            "atom_1": "B265:OG",
+            "atom_2": "Z1:C16"
+          }
+        ]
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "dehp_esterase"
+  }
+}

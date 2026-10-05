@@ -1,0 +1,58 @@
+{
+  "defaults": {
+    "num_designs": 2,
+    "seed_start": 0,
+    "num_sampling_steps": 1000
+  },
+  "designs": [
+    {
+      "name": "kemp_eliminase_unindexed",
+      "output_prefix": "kemp",
+      "description": "Kemp eliminase from same motif as GDM_KE_1483, with motif residues chosen by the model",
+      "input_file": "set1_tsa_top20_E_S_X_tsa-310.cif",
+      "motif_str": "120-160/B1",
+      "unindexed_motif_residues": "A1,A2",
+      "motif_atoms": "A1:OE2,OE1,CD,CG A2:OG,CB,CA",
+      "seq_length": "120-160",
+      "is_author_naming": false
+    }
+  ],
+  "resequence": {
+    "enabled": true,
+    "temperature": 0.1,
+    "num_sequences": 2,
+    "use_side_chain_context": false
+  },
+  "folding": {
+    "inputs": [
+      "resequenced"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "states": [
+      {
+        "name": "monomer",
+        "ligands": [],
+        "covalent_bonds": []
+      },
+      {
+        "name": "complex",
+        "ligands": [
+          {
+            "id": "B",
+            "ccd_code": "6NT"
+          }
+        ],
+        "covalent_bonds": []
+      }
+    ]
+  },
+  "evaluation": {
+    "suite": "kemp_eliminase"
+  }
+}

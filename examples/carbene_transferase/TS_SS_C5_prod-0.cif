@@ -1,0 +1,155 @@
+data_TS_SS_C5_prod
+#
+_entry.id TS_SS_C5_prod
+#
+loop_
+_chem_comp.formula
+_chem_comp.formula_weight
+_chem_comp.id
+_chem_comp.mon_nstd_flag
+_chem_comp.name
+_chem_comp.pdbx_smiles
+_chem_comp.pdbx_synonyms
+_chem_comp.type
+"C13 H16 O4"       236.264 EMF  . "ethyl (1S,2S)-2-(4-hydroxy-3-methoxyphenyl)cyclopropanecarboxylate" ?                        ?    NON-POLYMER         
+"C34 H32 Fe N4 O4" 616.487 HEM  . "PROTOPORPHYRIN IX CONTAINING FE"                                    ?                        HEME NON-POLYMER         
+"C6 H10 N3 O2"     156.162 HIS  y HISTIDINE                                                            ?                        ?    "L-PEPTIDE LINKING" 
+?                  ?       pd00 ? ?                                                                    C1=CC=CC=C1C2CC2C(OCC)=O ?    non-polymer         
+#
+loop_
+_entity.id
+_entity.pdbx_description
+_entity.type
+1 Ligand          non-polymer 
+2 "Protein chain" polymer     
+3 Ligand          non-polymer 
+#
+_entity_poly.entity_id      2
+_entity_poly.pdbx_strand_id C
+_entity_poly.type           polypeptide(L)
+#
+_entity_poly_seq.entity_id 2
+_entity_poly_seq.hetero    n
+_entity_poly_seq.mon_id    HIS
+_entity_poly_seq.num       1
+#
+loop_
+_pdbx_nonpoly_scheme.asym_id
+_pdbx_nonpoly_scheme.auth_seq_num
+_pdbx_nonpoly_scheme.entity_id
+_pdbx_nonpoly_scheme.mon_id
+_pdbx_nonpoly_scheme.pdb_ins_code
+_pdbx_nonpoly_scheme.pdb_seq_num
+_pdbx_nonpoly_scheme.pdb_strand_id
+A 1 1 HEM  . 1 A 
+B 1 3 pd00 . 1 B 
+#
+_pdbx_poly_seq_scheme.asym_id       C
+_pdbx_poly_seq_scheme.auth_seq_num  1
+_pdbx_poly_seq_scheme.entity_id     2
+_pdbx_poly_seq_scheme.hetero        n
+_pdbx_poly_seq_scheme.mon_id        HIS
+_pdbx_poly_seq_scheme.pdb_ins_code  .
+_pdbx_poly_seq_scheme.pdb_seq_num   1
+_pdbx_poly_seq_scheme.pdb_strand_id C
+_pdbx_poly_seq_scheme.seq_id        1
+#
+_software.classification other
+_software.name           "DeepMind Structure Class"
+_software.pdbx_ordinal   1
+_software.version        1.0.2
+#
+loop_
+_struct_asym.entity_id
+_struct_asym.id
+1 A 
+2 C 
+3 B 
+#
+loop_
+_atom_site.group_PDB
+_atom_site.id
+_atom_site.type_symbol
+_atom_site.label_atom_id
+_atom_site.label_alt_id
+_atom_site.label_comp_id
+_atom_site.label_asym_id
+_atom_site.label_entity_id
+_atom_site.label_seq_id
+_atom_site.pdbx_PDB_ins_code
+_atom_site.Cartn_x
+_atom_site.Cartn_y
+_atom_site.Cartn_z
+_atom_site.occupancy
+_atom_site.B_iso_or_equiv
+_atom_site.auth_seq_id
+_atom_site.auth_asym_id
+_atom_site.pdbx_PDB_model_num
+HETATM 1  C  C1A . HEM  A 1 . ? 2.374  -1.013 0.093  1.00 1.00 1 A 1 
+HETATM 2  C  C1B . HEM  A 1 . ? -1.403 -2.724 -1.030 1.00 1.00 1 A 1 
+HETATM 3  C  C1C . HEM  A 1 . ? -3.115 1.233  -1.298 1.00 1.00 1 A 1 
+HETATM 4  C  C1D . HEM  A 1 . ? 0.598  2.920  0.095  1.00 1.00 1 A 1 
+HETATM 5  C  C2A . HEM  A 1 . ? 3.122  -2.260 0.238  1.00 1.00 1 A 1 
+HETATM 6  C  C2B . HEM  A 1 . ? -2.541 -3.462 -1.537 1.00 1.00 1 A 1 
+HETATM 7  C  C2C . HEM  A 1 . ? -3.891 2.457  -1.341 1.00 1.00 1 A 1 
+HETATM 8  C  C2D . HEM  A 1 . ? 1.793  3.666  0.466  1.00 1.00 1 A 1 
+HETATM 9  C  C3A . HEM  A 1 . ? 2.221  -3.271 0.026  1.00 1.00 1 A 1 
+HETATM 10 C  C3B . HEM  A 1 . ? -3.472 -2.527 -1.934 1.00 1.00 1 A 1 
+HETATM 11 C  C3C . HEM  A 1 . ? -3.060 3.458  -0.873 1.00 1.00 1 A 1 
+HETATM 12 C  C3D . HEM  A 1 . ? 2.813  2.756  0.548  1.00 1.00 1 A 1 
+HETATM 13 C  C4A . HEM  A 1 . ? 0.944  -2.637 -0.265 1.00 1.00 1 A 1 
+HETATM 14 C  C4B . HEM  A 1 . ? -2.905 -1.221 -1.600 1.00 1.00 1 A 1 
+HETATM 15 C  C4C . HEM  A 1 . ? -1.789 2.817  -0.555 1.00 1.00 1 A 1 
+HETATM 16 C  C4D . HEM  A 1 . ? 2.226  1.453  0.236  1.00 1.00 1 A 1 
+HETATM 17 C  CAA . HEM  A 1 . ? 4.598  -2.374 0.471  1.00 1.00 1 A 1 
+HETATM 18 C  CAB . HEM  A 1 . ? -4.755 -2.813 -2.566 1.00 1.00 1 A 1 
+HETATM 19 C  CAC . HEM  A 1 . ? -3.338 4.870  -0.658 1.00 1.00 1 A 1 
+HETATM 20 C  CAD . HEM  A 1 . ? 4.250  2.986  0.913  1.00 1.00 1 A 1 
+HETATM 21 C  CBA . HEM  A 1 . ? 5.395  -2.442 -0.842 1.00 1.00 1 A 1 
+HETATM 22 C  CBB . HEM  A 1 . ? -5.402 -2.064 -3.474 1.00 1.00 1 A 1 
+HETATM 23 C  CBC . HEM  A 1 . ? -4.306 5.609  -1.227 1.00 1.00 1 A 1 
+HETATM 24 C  CBD . HEM  A 1 . ? 5.281  2.583  -0.167 1.00 1.00 1 A 1 
+HETATM 25 C  CGA . HEM  A 1 . ? 6.922  -2.679 -0.671 1.00 1.00 1 A 1 
+HETATM 26 C  CGD . HEM  A 1 . ? 6.266  1.448  0.245  1.00 1.00 1 A 1 
+HETATM 27 C  CHA . HEM  A 1 . ? 2.924  0.251  0.275  1.00 1.00 1 A 1 
+HETATM 28 C  CHB . HEM  A 1 . ? -0.211 -3.316 -0.622 1.00 1.00 1 A 1 
+HETATM 29 C  CHC . HEM  A 1 . ? -3.591 -0.016 -1.687 1.00 1.00 1 A 1 
+HETATM 30 C  CHD . HEM  A 1 . ? -0.649 3.490  -0.118 1.00 1.00 1 A 1 
+HETATM 31 C  CMA . HEM  A 1 . ? 2.465  -4.748 0.035  1.00 1.00 1 A 1 
+HETATM 32 C  CMB . HEM  A 1 . ? -2.611 -4.954 -1.654 1.00 1.00 1 A 1 
+HETATM 33 C  CMC . HEM  A 1 . ? -5.325 2.564  -1.755 1.00 1.00 1 A 1 
+HETATM 34 C  CMD . HEM  A 1 . ? 1.827  5.146  0.690  1.00 1.00 1 A 1 
+HETATM 35 FE FE  . HEM  A 1 . ? -0.417 0.088  -0.456 1.00 1.00 1 A 1 
+HETATM 36 N  NA  . HEM  A 1 . ? 1.060  -1.272 -0.206 1.00 1.00 1 A 1 
+HETATM 37 N  NB  . HEM  A 1 . ? -1.648 -1.374 -1.070 1.00 1.00 1 A 1 
+HETATM 38 N  NC  . HEM  A 1 . ? -1.852 1.476  -0.811 1.00 1.00 1 A 1 
+HETATM 39 N  ND  . HEM  A 1 . ? 0.891  1.586  -0.042 1.00 1.00 1 A 1 
+HETATM 40 O  O1A . HEM  A 1 . ? 7.321  -3.099 0.450  1.00 1.00 1 A 1 
+HETATM 41 O  O1D . HEM  A 1 . ? 7.216  1.247  -0.556 1.00 1.00 1 A 1 
+HETATM 42 O  O2A . HEM  A 1 . ? 7.624  -2.450 -1.695 1.00 1.00 1 A 1 
+HETATM 43 O  O2D . HEM  A 1 . ? 6.025  0.816  1.315  1.00 1.00 1 A 1 
+ATOM   44 N  N   . HIS  C 2 1 ? 3.526  0.597  -5.632 1.00 1.00 1 C 1 
+ATOM   45 C  CA  . HIS  C 2 1 ? 3.042  -0.785 -5.718 1.00 1.00 1 C 1 
+ATOM   46 C  C   . HIS  C 2 1 ? 3.618  -1.598 -6.871 1.00 1.00 1 C 1 
+ATOM   47 C  CB  . HIS  C 2 1 ? 1.518  -0.804 -5.718 1.00 1.00 1 C 1 
+ATOM   48 O  O   . HIS  C 2 1 ? 3.116  -2.673 -7.201 1.00 1.00 1 C 1 
+ATOM   49 C  CG  . HIS  C 2 1 ? 0.950  -0.191 -4.483 1.00 1.00 1 C 1 
+ATOM   50 C  CD2 . HIS  C 2 1 ? 0.620  -0.744 -3.293 1.00 1.00 1 C 1 
+ATOM   51 N  ND1 . HIS  C 2 1 ? 0.769  1.169  -4.341 1.00 1.00 1 C 1 
+ATOM   52 C  CE1 . HIS  C 2 1 ? 0.314  1.423  -3.126 1.00 1.00 1 C 1 
+ATOM   53 N  NE2 . HIS  C 2 1 ? 0.220  0.279  -2.470 1.00 1.00 1 C 1 
+HETATM 54 C  C6  . pd00 B 3 . ? -3.413 1.170  3.259  1.00 1.00 1 B 1 
+HETATM 55 C  C11 . pd00 B 3 . ? 2.038  -0.638 3.613  1.00 1.00 1 B 1 
+HETATM 56 C  C12 . pd00 B 3 . ? 3.186  0.310  3.896  1.00 1.00 1 B 1 
+HETATM 57 C  C8  . pd00 B 3 . ? -2.901 -0.775 1.752  1.00 1.00 1 B 1 
+HETATM 58 C  C1  . pd00 B 3 . ? -3.843 2.054  2.249  1.00 1.00 1 B 1 
+HETATM 59 C  C2  . pd00 B 3 . ? -4.240 3.350  2.560  1.00 1.00 1 B 1 
+HETATM 60 C  C3  . pd00 B 3 . ? -4.222 3.795  3.887  1.00 1.00 1 B 1 
+HETATM 61 C  C4  . pd00 B 3 . ? -3.798 2.931  4.900  1.00 1.00 1 B 1 
+HETATM 62 C  C5  . pd00 B 3 . ? -3.394 1.634  4.588  1.00 1.00 1 B 1 
+HETATM 63 C  C7  . pd00 B 3 . ? -2.953 -0.187 2.971  1.00 1.00 1 B 1 
+HETATM 64 C  C9  . pd00 B 3 . ? -0.736 0.149  1.348  1.00 1.00 1 B 1 
+HETATM 65 C  C10 . pd00 B 3 . ? 0.028  -0.652 2.346  1.00 1.00 1 B 1 
+HETATM 66 O  O1  . pd00 B 3 . ? 1.047  0.084  2.843  1.00 1.00 1 B 1 
+HETATM 67 O  O2  . pd00 B 3 . ? -0.170 -1.811 2.675  1.00 1.00 1 B 1 
+#
