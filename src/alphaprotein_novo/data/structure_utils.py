@@ -29,6 +29,7 @@ from alphaprotein_novo.constants import atom_types
 from alphaprotein_novo.constants import ligand_constants
 from alphaprotein_novo.constants import periodic_table
 from alphaprotein_novo.constants import residue_names
+from alphaprotein_novo.constants import terms_of_use
 from alphaprotein_novo.data import data_constants
 from alphaprotein_novo.data import ligand_data
 from alphaprotein_novo.data import pipeline_utils
@@ -773,6 +774,47 @@ def _format_float(val: float, width: int, precision: int = 2) -> str:
   return s[:width]
 
 
+def add_license_and_terms_of_use_header(content: str) -> str:
+  """Adds the license and terms of use header at the top of an output file.
+
+  This prepends a `#` comment block, which is valid in mmCIF (where `#` is the
+  CIF/STAR comment character) and ignored by PDB readers. It must NOT be used
+  for FASTA, whose readers require the file to begin with `>`; use
+  `format_fasta_with_terms_of_use` for FASTA output instead.
+
+  Args:
+    content: The mmCIF or PDB file content to stamp.
+
+  Returns:
+    `content` with the notice prepended as a comment block.
+  """
+  return f'{terms_of_use.OUTPUT_FILE_NOTICE}\n{content}'
+
+
+def format_fasta_with_terms_of_use(description: str, sequence: str) -> str:
+  """Builds a single-record FASTA file carrying the terms of use notice.
+
+  The notice is placed in the description field of the header line rather than
+  in a leading comment block, because most FASTA readers (Biopython's default
+  `fasta` parser, biotite, pyfastx, and htslib's `faidx` indexer) reject a file
+  that does not begin with `>`. Readers take the record ID to be the text up to
+  the first whitespace, so the ID remains `description` and the notice is
+  carried as free text after it.
+
+  Args:
+    description: The record identifier, written immediately after `>`. Must not
+      contain whitespace, which would otherwise truncate the ID that readers
+      report.
+    sequence: The single-letter amino acid sequence.
+
+  Returns:
+    The contents of a one-record FASTA file.
+  """
+  return (
+      f'>{description} {terms_of_use.OUTPUT_FASTA_HEADER_NOTICE}\n{sequence}\n'
+  )
+
+
 def save_structure_to_pdb(
     struct: structure.Structure,
     filepath: epath.PathLike,
@@ -878,7 +920,9 @@ def save_structure_to_pdb(
     )
 
   lines.append('END')
-  epath.Path(filepath).write_text('\n'.join(lines) + '\n')
+  epath.Path(filepath).write_text(
+      add_license_and_terms_of_use_header('\n'.join(lines) + '\n')
+  )
 
 
 def extract_fixed_residues(

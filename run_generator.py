@@ -567,7 +567,9 @@ def save_outputs(
 
   # Save mmCIF file.
   cif_path = out_path / f'{output_prefix}{design_manifest.CIF_SUFFIX}'
-  cif_path.write_text(struct.to_mmcif())
+  cif_path.write_text(
+      structure_utils.add_license_and_terms_of_use_header(struct.to_mmcif())
+  )
   logging.info('Saved mmCIF structure to %s', cif_path)
 
   # Save per-design ground-truth motif mmCIF file (in target residue indexing).
@@ -590,7 +592,11 @@ def save_outputs(
   if chain_seqs:
     protein_seq = next(iter(chain_seqs.values()))
     fasta_path = out_path / f'{output_prefix}{design_manifest.FASTA_SUFFIX}'
-    fasta_path.write_text(f'>{output_prefix}\n{protein_seq}\n')
+    fasta_path.write_text(
+        structure_utils.format_fasta_with_terms_of_use(
+            output_prefix, protein_seq
+        )
+    )
     logging.info('Saved FASTA sequence to %s', fasta_path)
 
   # Extract fixed residue indices and write the metadata. The ligand mask is

@@ -444,7 +444,11 @@ def _finalize_redesigned_design(
         prefix, reseq_index=idx, num_sequences=num_sequences
     )
     fasta_path = out_dir / f'{reseq_prefix}{design_manifest.FASTA_SUFFIX}'
-    fasta_path.write_text(f'>{reseq_prefix}\n{redesigned_seq}\n')
+    fasta_path.write_text(
+        structure_utils.format_fasta_with_terms_of_use(
+            reseq_prefix, redesigned_seq
+        )
+    )
     logging.info('Saved redesigned FASTA to %s', fasta_path)
 
     reseq_struct = structure_utils.create_resequenced_structure(
@@ -453,7 +457,11 @@ def _finalize_redesigned_design(
         fixed_residues=resolved_fixed_residues,
     )
     reseq_cif = out_dir / f'{reseq_prefix}{design_manifest.RESEQ_CIF_SUFFIX}'
-    reseq_cif.write_text(reseq_struct.to_mmcif())
+    reseq_cif.write_text(
+        structure_utils.add_license_and_terms_of_use_header(
+            reseq_struct.to_mmcif()
+        )
+    )
     logging.info('Saved resequenced mmCIF structure to %s', reseq_cif)
 
 

@@ -55,11 +55,13 @@ from alphafold3.cpp import cif_dict
 from alphafold3.data import featurisation
 from alphafold3.data.tools import rdkit_utils
 from alphafold3.model import features
+from alphafold3.model import mmcif_metadata
 from alphafold3.model import model
 from alphafold3.model import params
 from alphafold3.model.components import utils
 from alphaprotein_novo.data import design_manifest
 from alphaprotein_novo.data import structure_prediction_spec
+from alphaprotein_novo.data import structure_utils
 from etils import epath
 import haiku as hk
 import jax
@@ -630,7 +632,12 @@ def _fold_one_design(
 
       top_sample = max(results, key=_ranking_confidence)
       struct = top_sample.predicted_structure
-      folded_cif_path.write_text(struct.to_mmcif())
+      # The folded structure carries both AP Novo and AF3 notices.
+      folded_cif_path.write_text(
+          structure_utils.add_license_and_terms_of_use_header(
+              mmcif_metadata.add_legal_comment(struct.to_mmcif())
+          )
+      )
       plddt = (
           float(np.mean(struct.atoms_table.b_factor))
           if struct.atoms_table.size > 0
