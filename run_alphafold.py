@@ -458,6 +458,24 @@ def _resolve_designs(
   return resolved
 
 
+def _select_attention_implementation(device: jax.Device) -> str:
+  """Chooses a Tokamax attention backend supported by `device`.
+
+  AlphaFold 3 defaults to its Triton attention kernel, which needs NVIDIA
+  compute capability 8.0 (Ampere) or newer. Use chunked XLA attention for
+  older CUDA GPUs, and regular XLA attention for CPU and other JAX platforms.
+  """
+  if device.platform != 'gpu':
+    return 'xla'
+
+  compute_capability = getattr(device, 'compute_capability', None)
+  try:
+    supports_triton = float(compute_capability) >= 8.0
+  except (TypeError, ValueError):
+    supports_triton = False
+  return 'triton' if supports_triton else 'xla_chunked'
+
+
 def _build_model_runner(model_dir: epath.PathLike | None) -> ModelRunner:
   """Returns an AlphaFold 3 model runner reading weights from `model_dir`."""
   model_path = epath.Path(
@@ -468,8 +486,19 @@ def _build_model_runner(model_dir: epath.PathLike | None) -> ModelRunner:
   logging.info('Initializing AlphaFold 3 ModelRunner from %s...', model_path)
   devices = jax.local_devices()
   device = devices[0] if devices else jax.devices()[0]
+  config = make_model_config()
+  config.global_config.flash_attention_implementation = (
+      _select_attention_implementation(device)
+  )
+  logging.info(
+      'Using AF3 %s attention on %s (platform=%s, compute_capability=%s).',
+      config.global_config.flash_attention_implementation,
+      device.device_kind,
+      device.platform,
+      getattr(device, 'compute_capability', 'n/a'),
+  )
   return ModelRunner(
-      config=make_model_config(),
+      config=config,
       device=device,
       model_dir=model_path,
   )
