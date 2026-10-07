@@ -25,3 +25,10 @@ Thumbs.db
 
 # Model weights (downloaded separately)
 models/
+
+# LigandMPNN (downloaded separately)
+LigandMPNN/
+LigandMPNN/model_params/
+
+# publication markdown files
+publication/
