@@ -43,8 +43,10 @@ import dataclasses
 import functools
 import itertools
 import json
+import logging as python_logging
 import os
 from typing import Any
+import warnings
 
 from absl import app
 from absl import flags
@@ -68,6 +70,45 @@ import jax
 from jax import numpy as jnp
 import numpy as np
 from rdkit import Chem as rd_chem
+
+
+class _ExpectedFoldingLogFilter(python_logging.Filter):
+  """Hide routine padding and unsupported GLU kernel fallback diagnostics."""
+
+  def filter(self, record: python_logging.LogRecord) -> bool:
+    path = record.pathname.replace('\\', '/')
+    if (
+        '/tokamax/_src/ops/gated_linear_unit/api.py' in path
+        and record.getMessage() == 'Failed to run implementation'
+        and record.exc_info
+        and isinstance(record.exc_info[1], NotImplementedError)
+        and str(record.exc_info[1]).startswith('Not supported on ')
+    ):
+      # Tokamax tries another implementation (including XLA). If none works,
+      # its ExceptionGroup still propagates and remains visible to the caller.
+      return False
+    if (
+        record.levelno == python_logging.INFO
+        and path.endswith('/alphafold3/data/pipeline.py')
+        and record.getMessage().startswith('Got bucket size ')
+    ):
+      return False
+    return True
+
+
+logging.get_absl_logger().addFilter(_ExpectedFoldingLogFilter())
+warnings.filterwarnings(
+    'ignore',
+    message=r'backend and device argument on jit is deprecated\..*',
+    category=DeprecationWarning,
+    module=r'run_alphafold|__main__',
+)
+warnings.filterwarnings(
+    'ignore',
+    message=r'Explicitly requested dtype int64 requested in broadcasted_iota.*',
+    category=UserWarning,
+    module=r'alphafold3\.model\.network\.featurization',
+)
 
 _DEFAULT_AF3_MODEL_DIR = epath.Path(__file__).parent / 'models/af3_la'
 
