@@ -229,7 +229,7 @@ def motif_atoms_str_to_tuples(
   for ch_res_atom in motif_atoms_str.split(' '):
     ch_res, atom_str = ch_res_atom.split(':')
     ch, res = separate_chain_id_from_res_ids(ch_res)
-    atoms = atom_str.split(',')
+    atoms = [atom for atom in atom_str.split(',') if atom]
     motif_atoms_tuples.extend([(ch, int(res), atom) for atom in atoms])
   return motif_atoms_tuples
 

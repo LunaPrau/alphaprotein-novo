@@ -21,6 +21,7 @@ import json
 from typing import Any
 
 from alphafold3 import structure
+from alphafold3.structure import mmcif
 from alphaprotein_novo.constants import atom_types
 from alphaprotein_novo.constants import residue_names
 from alphaprotein_novo.data import motif_spec
@@ -134,10 +135,10 @@ class UnindexedMotifPreparationResult:
 
   Attributes:
     sampled_struct: Sampled structure with atom_b_factor updated to indicate
-      motif and ligand fixed atoms (1.0 for fixed, 0.0 for non-fixed).
+      fixed motif/ligand atoms (1.0 for fixed, 0.0 for non-fixed/mobile).
     reference_motif_struct: Reference structure containing the original motif
-      coordinates aligned to sampled_struct's atom ordering, with
-      atom_b_factor=1.0 for motif/ligand atoms.
+      coordinates aligned to sampled_struct's atom ordering. Mobile ligand
+      atoms retain source coordinates and have atom_b_factor=0.0.
     sampled_motif_str: Reconstructed motif string indicating positions of all
       matched motif residues and fixed chains.
     residue_map: Updated ResidueMap reflecting matched motif positions.
@@ -393,13 +394,15 @@ def create_aligned_reference_structure(
     sampled_struct: structure.Structure,
     motif_data: UnindexedMotifData,
     diffused_index_map: dict[int, str],
+    spec: motif_spec.MotifSpec | None = None,
 ) -> structure.Structure:
   """Creates a reference structure aligned to sampled_struct atom ordering.
 
   The output structure has the same atoms as sampled_struct, with:
   - Motif atoms: coordinates from motif_data, b_factor=1.0
   - Non-motif atoms: zero coordinates, b_factor=0.0
-  - Ligand atoms: coordinates from sampled_struct (unchanged), b_factor=1.0
+  - Fixed ligand atoms: coordinates from sampled_struct, b_factor=1.0
+  - Mobile ligand atoms: source coordinates, b_factor=0.0
 
   Args:
     sampled_struct: The sampled structure to align to.
@@ -460,6 +463,41 @@ def create_aligned_reference_structure(
   ligand_mask = sampled_struct.chain_type == 'non-polymer'
   new_coords[ligand_mask] = sampled_struct.coords[ligand_mask]
   new_b_factors[ligand_mask] = 1.0
+  if spec is not None and spec.ligand_mobile_atoms:
+    if spec.input_struct is None:
+      raise ValueError(
+          'Mobile ligand reference coordinates require an input structure.'
+      )
+    source_to_target = _source_to_target_ligand_residues(spec)
+    for residue, atom_names in spec.ligand_mobile_atoms.items():
+      source_chain, source_residue = residue_mapping.separate_chain_id_from_res_ids(
+          residue
+      )
+      source_key = (source_chain, int(source_residue))
+      if source_key not in source_to_target:
+        raise ValueError(
+            f'ligand_mobile_atoms residue {residue!r} is not present in the motif.'
+        )
+      target_chain, target_residue = source_to_target[source_key]
+      for atom_name in atom_names:
+        source_atom = (
+            (spec.input_struct.chain_id == source_chain)
+            & (spec.input_struct.res_id == int(source_residue))
+            & (spec.input_struct.atom_name == atom_name)
+        )
+        target_atom = (
+            ligand_mask
+            & (sampled_struct.chain_id == target_chain)
+            & (sampled_struct.res_id == target_residue)
+            & (sampled_struct.atom_name == atom_name)
+        )
+        if np.sum(source_atom) != 1 or np.sum(target_atom) != 1:
+          raise ValueError(
+              f'Could not map mobile ligand atom {residue}:{atom_name} '
+              'between source and generated structures.'
+          )
+        new_coords[target_atom] = spec.input_struct.coords[source_atom]
+        new_b_factors[target_atom] = 0.0
 
   return sampled_struct.copy_and_update_atoms(
       atom_x=new_coords[:, 0],
@@ -467,6 +505,51 @@ def create_aligned_reference_structure(
       atom_z=new_coords[:, 2],
       atom_b_factor=new_b_factors,
   )
+
+
+def _source_to_target_ligand_residues(
+    spec: motif_spec.MotifSpec,
+) -> dict[residue_mapping.ResTuple, residue_mapping.ResTuple]:
+  """Maps source ligand residues to output chains for unparsed and parsed specs."""
+  if spec.residue_map is not None:
+    source_to_target = spec.residue_map.get_source_resid_to_target_resid_dict()
+    mobile_residues = set()
+    for label in spec.ligand_mobile_atoms or {}:
+      chain_id, residue_id = residue_mapping.separate_chain_id_from_res_ids(
+          label
+      )
+      mobile_residues.add((chain_id, int(residue_id)))
+    return {
+        key: value for key, value in source_to_target.items()
+        if key in mobile_residues
+    }
+  if spec.input_struct is None:
+    raise ValueError('Mobile ligand references require the motif input structure.')
+  result = {}
+  for chain_index, chain in enumerate(
+      (spec.sampled_motif_str or spec.motif_str).split('/'), start=1
+  ):
+    for segment in chain.split(','):
+      if not segment or not segment[0].isalpha():
+        continue
+      source_chain, source_res_ids = (
+          residue_mapping.separate_chain_id_from_res_ids(segment)
+      )
+      if '-' in source_res_ids:
+        continue
+      source_residue = int(source_res_ids)
+      source_atoms = (
+          (spec.input_struct.chain_id == source_chain)
+          & (spec.input_struct.res_id == source_residue)
+      )
+      if not np.any(source_atoms) or not np.all(
+          spec.input_struct.chain_type[source_atoms] == 'non-polymer'
+      ):
+        continue
+      result[(source_chain, source_residue)] = (
+          mmcif.int_id_to_str_id(chain_index), 1
+      )
+  return result
 
 
 def validate_matched_motif_residues_are_on_design_chains(
@@ -622,9 +705,11 @@ def prepare_unindexed_motif_sample(
   else:
     motif_data = unindexed_motif_data
 
+  if spec.input_struct is None:
+    spec = spec.with_input_struct()
+  if spec.is_author_naming:
+    spec = spec.with_internal_naming()
   if motif_struct is None:
-    if spec.input_struct is None:
-      spec = spec.with_input_struct()
     motif_struct = spec.input_struct
   if motif_struct is None:
     raise ValueError(
@@ -644,8 +729,35 @@ def prepare_unindexed_motif_sample(
 
   # Get the motif_atom_mask from geometric matching.
   motif_atom_mask = (matching_result.motif_atom_mask > 0).astype(np.int32)
-  ligand_mask = (sampled_struct.chain_type == 'non-polymer').astype(np.int32)
-  fixed_atom_mask = motif_atom_mask | ligand_mask
+  ligand_mask = sampled_struct.chain_type == 'non-polymer'
+  fixed_ligand_mask = ligand_mask.copy()
+  if spec.ligand_mobile_atoms:
+    source_to_target = _source_to_target_ligand_residues(spec)
+    for residue, atom_names in spec.ligand_mobile_atoms.items():
+      source_chain, source_residue = residue_mapping.separate_chain_id_from_res_ids(
+          residue
+      )
+      source_key = (source_chain, int(source_residue))
+      if source_key not in source_to_target:
+        raise ValueError(
+            f'ligand_mobile_atoms residue {residue!r} is not present in the motif.'
+        )
+      target_chain, target_residue = source_to_target[source_key]
+      for atom_name in atom_names:
+        target_atom = (
+            ligand_mask
+            & (sampled_struct.chain_id == target_chain)
+            & (sampled_struct.res_id == target_residue)
+            & (sampled_struct.atom_name == atom_name)
+        )
+        if np.sum(target_atom) != 1:
+          raise ValueError(
+              f'Could not find unique generated ligand atom '
+              f'{residue}:{atom_name} for mobile-mask annotation.'
+          )
+        fixed_ligand_mask[target_atom] = False
+  fixed_atom_mask = (motif_atom_mask.astype(bool) & ~ligand_mask) | fixed_ligand_mask
+  fixed_atom_mask = fixed_atom_mask.astype(np.int32)
 
   # Add ligand atoms to the sequence mask.
   ligand_struct = sampled_struct.filter_to_entity_type(ligand=True)
@@ -713,6 +825,7 @@ def prepare_unindexed_motif_sample(
       sampled_struct=sampled_struct,
       motif_data=motif_data,
       diffused_index_map=matching_result.diffused_index_map,
+      spec=spec,
   )
 
   predicted_residues = []

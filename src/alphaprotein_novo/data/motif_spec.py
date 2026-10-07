@@ -14,7 +14,7 @@
 
 """Classes and functions for specifying a protein design problem."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 import dataclasses
 from typing import Any, Self
 
@@ -354,9 +354,24 @@ def add_ligand_features(
     input_struct: structure.Structure,
     res_map: residue_mapping.ResidueMap,
     max_num_res: int,
+    ligand_mobile_atoms: Mapping[str, Sequence[str]] | None = None,
 ) -> dict[str, Any]:
-  """Add ligand atom features to DiffusionInput."""
+  """Add ligand atom features and apply optional mobile-coordinate masks."""
   protein_features = input_features['protein']
+  mobile_atoms_by_source_residue = {}
+  for residue, atom_names in (ligand_mobile_atoms or {}).items():
+    chain_id, residue_id = residue_mapping.separate_chain_id_from_res_ids(
+        residue
+    )
+    key = (chain_id, int(residue_id))
+    if key in mobile_atoms_by_source_residue:
+      raise ValueError(f'Duplicate ligand_mobile_atoms residue reference: {residue}')
+    if not atom_names or any(not atom for atom in atom_names):
+      raise ValueError(
+          f'ligand_mobile_atoms[{residue!r}] must contain at least one atom name.'
+      )
+    mobile_atoms_by_source_residue[key] = set(atom_names)
+  used_mobile_residues = set()
 
   unique_chain_ids = []
   for i in res_map.source_chain_ids[res_map.is_ligand_mask]:
@@ -378,6 +393,27 @@ def add_ligand_features(
     ligand_struct = input_struct.filter(
         chain_id=source_chain_id
     ).without_hydrogen()
+    source_residue_ids = set(
+        int(res_id) for res_id in res_map.source_residue_ids[target_mask]
+    )
+    if len(source_residue_ids) != 1:
+      raise ValueError(
+          f'Ligand chain {source_chain_id} maps to source residues '
+          f'{sorted(source_residue_ids)}; one residue per ligand chain is supported.'
+      )
+    source_residue_key = (str(source_chain_id), next(iter(source_residue_ids)))
+    mobile_atom_names = mobile_atoms_by_source_residue.get(
+        source_residue_key, set()
+    )
+    if mobile_atom_names:
+      available_atom_names = set(map(str, ligand_struct.atom_name))
+      unknown_atoms = mobile_atom_names - available_atom_names
+      if unknown_atoms:
+        raise ValueError(
+            f'ligand_mobile_atoms for {source_residue_key} references absent '
+            f'atom(s): {sorted(unknown_atoms)}.'
+        )
+      used_mobile_residues.add(source_residue_key)
     ligand_features = structure_utils.features_from_structure(
         struct=ligand_struct,  # pyrefly: ignore[bad-argument-type]
         num_residues=num_ligand_atoms,
@@ -415,9 +451,26 @@ def add_ligand_features(
     ]:
       protein_features[feat_name][i_ligand] = ligand_features[feat_name][0]
 
-    input_features['fixed_atom_mask'][padded_target_mask] = ligand_features[
-        'all_atom_mask'
-    ]
+    ligand_fixed_atom_mask = np.array(
+        ligand_features['all_atom_mask'], copy=True
+    )
+    if mobile_atom_names:
+      ligand_token_atom_names = ligand_features['ligand_atom_names']
+      mobile_rows = np.asarray(
+          [str(name) in mobile_atom_names for name in ligand_token_atom_names]
+      )
+      mapped_mobile_names = {
+          str(name) for name in ligand_token_atom_names[mobile_rows]
+      }
+      if mapped_mobile_names != mobile_atom_names:
+        raise ValueError(
+            f'Could not map every ligand_mobile_atoms name for '
+            f'{source_residue_key} to Novo ligand atom order.'
+        )
+      ligand_fixed_atom_mask[mobile_rows, 0] = 0
+    input_features['fixed_atom_mask'][padded_target_mask] = (
+        ligand_fixed_atom_mask
+    )
     input_features['fixed_seq_mask'][padded_target_mask] = 1
     input_features['ligand_charge'][padded_target_mask] = ligand_features[
         'ligand_charge'
@@ -433,6 +486,12 @@ def add_ligand_features(
     ]
 
   input_features['protein'] = protein_features
+  unused_mobile_residues = set(mobile_atoms_by_source_residue) - used_mobile_residues
+  if unused_mobile_residues:
+    raise ValueError(
+        'ligand_mobile_atoms contains residues not present as ligand motifs: '
+        f'{sorted(unused_mobile_residues)}.'
+    )
   return input_features
 
 
@@ -450,7 +509,7 @@ def _residue_atom_masks(
     res_idx = source_chain_res.index((ch, int(r)))
     if res_idx not in masks_by_res_idx:
       masks_by_res_idx[res_idx] = np.zeros(37, dtype=int)
-    for atom in atom_str.split(','):
+    for atom in filter(None, atom_str.split(',')):
       masks_by_res_idx[res_idx][atom_types.ATOM37_ORDER[atom]] = 1
   return masks_by_res_idx
 
@@ -611,6 +670,7 @@ def _add_unindexed_motif_ligand_features(
     input_features: dict[str, Any],
     ligand_indices: np.ndarray,
     protein_fixed_seq_mask: np.ndarray,
+    fixed_atom_mask: np.ndarray,
 ) -> None:
   """Adds ligand features to unindexed motif features."""
   num_ligands = len(ligand_indices)
@@ -620,9 +680,10 @@ def _add_unindexed_motif_ligand_features(
   unindexed_ligand_indices = np.arange(start_idx, end_idx, dtype=int)
   input_features['unindexed_motif_atom_positions'][unindexed_ligand_indices] = (
       input_features['protein']['all_atom_positions'][ligand_indices]
+      * fixed_atom_mask[ligand_indices, :, None]
   )
   input_features['unindexed_motif_atom_mask'][unindexed_ligand_indices] = (
-      input_features['protein']['all_atom_mask'][ligand_indices]
+      fixed_atom_mask[ligand_indices]
   )
   input_features['unindexed_motif_aatype'][unindexed_ligand_indices] = (
       input_features['protein']['aatype'][ligand_indices]
@@ -642,6 +703,7 @@ def add_unindexed_motif_features(
     reseq_residues: str,
     motif_atoms: str,
     max_num_res: int,
+    fixed_atom_mask: np.ndarray | None = None,
 ) -> dict[str, Any]:
   """Update input feature dict with unindexed motif atom features."""
   unindexed_motif_res_map = residue_mapping.motif_str_to_residue_map(
@@ -683,6 +745,8 @@ def add_unindexed_motif_features(
 
   ligand_mask = input_features['protein']['is_ligand_mask']
   ligand_indices = np.nonzero(ligand_mask)[0]
+  if fixed_atom_mask is None:
+    fixed_atom_mask = input_features['fixed_atom_mask']
   num_source_residues = len(source_idx) + len(ligand_indices)
   if num_source_residues > max_num_res:
     raise ValueError(
@@ -714,7 +778,7 @@ def add_unindexed_motif_features(
   # Add ligand features to the unindexed motif features as well,
   # placing them after the protein motif features.
   _add_unindexed_motif_ligand_features(
-      input_features, ligand_indices, protein_fixed_seq_mask
+      input_features, ligand_indices, protein_fixed_seq_mask, fixed_atom_mask
   )
 
   return input_features
@@ -785,6 +849,8 @@ class MotifSpec:
       indexed and unindexed modes).
     unindexed_motif_residues: Motif residues to be used in unindexed motif
       conditioning.
+    ligand_mobile_atoms: Source ligand residue-to-atom-name selections whose
+      observed coordinates are not fixed during diffusion.
     residue_map: Map from input structure to design residue/ligand tokens.
     is_parsed: Whether the MotifSpec has been parsed and is ready to be
       converted to DiffusionInput.
@@ -804,6 +870,7 @@ class MotifSpec:
   reseq_residues: str | None = None
   seq_length: str | None = None
   unindexed_motif_residues: str | None = None
+  ligand_mobile_atoms: Mapping[str, Sequence[str]] | None = None
   residue_map: residue_mapping.ResidueMap | None = None
   is_parsed: bool = False
 
@@ -836,14 +903,20 @@ class MotifSpec:
           self.sampled_motif_str,  # pyrefly: ignore[bad-argument-type]
           auth2internal,
       )
-      motif_atoms_tuples = residue_mapping.motif_atoms_str_to_tuples(
-          self.motif_atoms
-      )
-      internal_motif_atoms_tuples = residue_mapping.reindex_atom_tuples(
-          motif_atoms_tuples, auth2internal
-      )
-      internal_named_fields['motif_atoms'] = (
-          residue_mapping.motif_atoms_tuples_to_str(internal_motif_atoms_tuples)
+      internal_motif_atom_groups = []
+      for group in self.motif_atoms.split():
+        source_residue, atom_names = group.split(':', maxsplit=1)
+        source_chain, source_res_id = (
+            residue_mapping.separate_chain_id_from_res_ids(source_residue)
+        )
+        target_chain, target_res_id = auth2internal[
+            (source_chain, int(source_res_id))
+        ]
+        internal_motif_atom_groups.append(
+            f'{target_chain}{target_res_id}:{atom_names}'
+        )
+      internal_named_fields['motif_atoms'] = ' '.join(
+          internal_motif_atom_groups
       )
       internal_named_fields['reseq_residues'] = renumber_motif_string(
           self.reseq_residues,  # pyrefly: ignore[bad-argument-type]
@@ -853,6 +926,13 @@ class MotifSpec:
           self.unindexed_motif_residues,  # pyrefly: ignore[bad-argument-type]
           auth2internal,
       )
+      if self.ligand_mobile_atoms:
+        renumbered = renumber_motif_string(
+            ','.join(self.ligand_mobile_atoms), auth2internal
+        ).split(',')
+        internal_named_fields['ligand_mobile_atoms'] = dict(
+            zip(renumbered, self.ligand_mobile_atoms.values(), strict=True)
+        )
 
     return dataclasses.replace(
         self,
@@ -963,6 +1043,7 @@ class MotifSpec:
           input_struct,
           self.residue_map,
           max_num_res,
+          self.ligand_mobile_atoms,
       )
     if self.motif_atoms and not self.is_unindexed:
       input_features = add_motif_atom_features(
@@ -1024,6 +1105,7 @@ class MotifSpec:
           motif_atoms=self.motif_atoms or '',
           reseq_residues=self.reseq_residues or '',
           max_num_res=max_num_res_unindexed,
+          fixed_atom_mask=input_features['fixed_atom_mask'],
       )
 
     if self.partial_diffusion_input_struct is None:

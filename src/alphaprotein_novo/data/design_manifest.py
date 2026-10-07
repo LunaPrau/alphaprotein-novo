@@ -110,6 +110,7 @@ _MOTIF_SPEC_FIELDS = (
     'reseq_residues',
     'seq_length',
     'unindexed_motif_residues',
+    'ligand_mobile_atoms',
 )
 
 
@@ -155,6 +156,8 @@ class DesignJob(_BaseModel):
     seq_length: Optional total design length constraint.
     unindexed_motif_residues: Motif residues for unindexed conditioning. Setting
       this is what switches the spec into unindexed mode.
+    ligand_mobile_atoms: Optional mapping from source ligand residues such as
+      `B1` to atom names whose coordinates are generated rather than fixed.
     num_designs: How many designs to generate for this spec. Each design
       re-parses the spec with its own seed, resampling linker lengths.
     seeds: Explicit per-design seeds, mainly for tests and for reproducing a
@@ -179,6 +182,7 @@ class DesignJob(_BaseModel):
   reseq_residues: str | None = None
   seq_length: str | None = None
   unindexed_motif_residues: str | None = None
+  ligand_mobile_atoms: dict[str, tuple[str, ...]] | None = None
 
   num_designs: pydantic.PositiveInt | None = None
   seeds: tuple[int, ...] | None = None
@@ -187,6 +191,30 @@ class DesignJob(_BaseModel):
   output_prefix: str | None = None
   partial_diffusion_input_file: str | None = None
   partial_diffusion_num_steps: pydantic.PositiveInt | None = None
+
+  @pydantic.field_validator('ligand_mobile_atoms')
+  @classmethod
+  def _check_ligand_mobile_atoms(
+      cls, value: dict[str, tuple[str, ...]] | None
+  ) -> dict[str, tuple[str, ...]] | None:
+    """Rejects empty, duplicate, or malformed mobile atom selections."""
+    if value is None:
+      return None
+    for residue, atom_names in value.items():
+      if not residue or not atom_names:
+        raise ValueError(
+            'ligand_mobile_atoms entries need a source residue key and at '
+            'least one atom name.'
+        )
+      if any(not name for name in atom_names):
+        raise ValueError(
+            f'ligand_mobile_atoms[{residue!r}] contains an empty atom name.'
+        )
+      if len(set(atom_names)) != len(atom_names):
+        raise ValueError(
+            f'ligand_mobile_atoms[{residue!r}] contains duplicate atom names.'
+        )
+    return value
 
   @pydantic.field_validator('name', 'output_prefix')
   @classmethod
