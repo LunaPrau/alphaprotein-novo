@@ -32,3 +32,6 @@ LigandMPNN/model_params/
 
 # publication markdown files
 publication/
+
+# tests
+tests/
